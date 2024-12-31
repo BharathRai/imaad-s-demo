@@ -1,0 +1,184 @@
+/* Center the page content */
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #eef2f7;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+}
+
+/* Card container */
+.card {
+  width: 400px;
+  padding: 30px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Title styling */
+.card-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+/* Subtitle styling */
+.card-subtitle {
+  font-size: 1rem;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #666;
+}
+
+/* Form layout */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Role selection */
+.role-selection {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.role-option {
+  font-size: 1rem;
+  color: #555;
+}
+
+.role-option input {
+  margin-right: 8px;
+  accent-color: #007bff;
+}
+
+/* Form group styling */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-field {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Password visibility toggle */
+.password-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-password-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.toggle-password-btn:hover {
+  color: #0056b3;
+}
+
+/* Error message styling */
+.error-message {
+  color: #d9534f;
+  font-size: 0.85rem;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Button styling */
+.primary-button {
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.primary-button:hover {
+  background-color: #0056b3;
+  box-shadow: 0px 4px 10px rgba(0, 91, 187, 0.2);
+}
+
+.primary-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  margin-top: 10px;
+  padding: 12px;
+  font-size: 1rem;
+  background-color: transparent;
+  color: #007bff;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.secondary-button:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 500px) {
+  .card {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 1.5rem;
+  }
+
+  .card-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .primary-button {
+    font-size: 0.9rem;
+  }
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
