@@ -3,15 +3,13 @@ import { Box, Typography, TextField, Button, Grid } from '@mui/material';
 
 export default function Record() {
   const [usn, setUsn] = useState('');
-  const [marks, setMarks] = useState('');
-  const [attendance, setAttendance] = useState('');
   const [projects, setProjects] = useState('');
   const [internship, setInternship] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async () => {
-    const payload = { Marks: marks, Attendance: attendance, Projects: projects, Internship: internship, USN: usn };
+    const payload = { Projects: projects, Internship: internship, USN: usn };
 
     try {
       const response = await fetch('http://localhost:5000/api/record', {
@@ -45,26 +43,6 @@ export default function Record() {
             fullWidth
             value={usn}
             onChange={(e) => setUsn(e.target.value)}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Marks"
-            fullWidth
-            value={marks}
-            onChange={(e) => setMarks(e.target.value)}
-            type="number"
-            required
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Attendance"
-            fullWidth
-            value={attendance}
-            onChange={(e) => setAttendance(e.target.value)}
-            type="number"
             required
           />
         </Grid>

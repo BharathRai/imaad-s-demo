@@ -58,8 +58,6 @@ export default function RecordTable() {
               <TableRow>
                 <TableCell>Record ID</TableCell>
                 <TableCell>USN</TableCell>
-                <TableCell>Marks</TableCell>
-                <TableCell>Attendance</TableCell>
                 <TableCell>Projects</TableCell>
                 <TableCell>Internship</TableCell>
                 <TableCell>Actions</TableCell>
@@ -71,8 +69,6 @@ export default function RecordTable() {
                   <TableRow key={record.RecordID}>
                     <TableCell>{record.RecordID}</TableCell>
                     <TableCell>{record.USN}</TableCell>
-                    <TableCell>{record.Marks}</TableCell>
-                    <TableCell>{record.Attendance}</TableCell>
                     <TableCell>{record.Projects}</TableCell>
                     <TableCell>{record.Internship}</TableCell>
                     <TableCell>
@@ -88,7 +84,7 @@ export default function RecordTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
+                  <TableCell colSpan={5} align="center">
                     No records available
                   </TableCell>
                 </TableRow>

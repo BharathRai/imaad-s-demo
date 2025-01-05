@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Snackbar, Alert } from '@mui/material';
+import { TextField, Button, Box, Typography, Snackbar, Alert, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 export default function AddStudent() {
@@ -23,9 +23,15 @@ export default function AddStudent() {
   const validateFields = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\d{10}$/;
+    const usnRegex = /^4SF/;
 
     if (!studentData.USN || !studentData.StudentName || !studentData.Email || !studentData.Phone || !studentData.DeptID) {
       setSnackbar({ open: true, message: 'Please fill out all fields.', severity: 'warning' });
+      return false;
+    }
+
+    if (!usnRegex.test(studentData.USN)) {
+      setSnackbar({ open: true, message: 'USN must start with "4SF".', severity: 'warning' });
       return false;
     }
 
@@ -119,15 +125,24 @@ export default function AddStudent() {
             type="tel"
             aria-label="Enter the phone number"
           />
-          <TextField
-            label="Department ID"
-            variant="outlined"
-            name="DeptID"
-            value={studentData.DeptID}
-            onChange={handleChange}
-            required
-            aria-label="Enter the department ID"
-          />
+          <FormControl variant="outlined" required>
+            <InputLabel id="dept-label">Department</InputLabel>
+            <Select
+              labelId="dept-label"
+              label="Department"
+              name="DeptID"
+              value={studentData.DeptID}
+              onChange={handleChange}
+              aria-label="Select the department"
+            >
+              <MenuItem value={1}>ISE</MenuItem>
+              <MenuItem value={2}>CSE</MenuItem>
+              <MenuItem value={3}>AIML</MenuItem>
+              <MenuItem value={4}>MBA</MenuItem>
+              <MenuItem value={5}>EC</MenuItem>
+              <MenuItem value={6}>MECH</MenuItem>
+            </Select>
+          </FormControl>
           <Button variant="contained" color="primary" type="submit" disabled={loading}>
             {loading ? 'Submitting...' : 'Add Student'}
           </Button>

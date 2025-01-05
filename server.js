@@ -63,15 +63,13 @@ app.post('/api/students', (req, res) => {
     return res.status(400).json({ success: false, error: 'All fields are required' });
   }
 
-  validateDeptID(DeptID, res, () => {
-    const query = 'INSERT INTO Student (USN, StudentName, Email, Phone, DeptID) VALUES (?, ?, ?, ?, ?)';
-    db.query(query, [USN, StudentName, Email, Phone, DeptID], (err) => {
-      if (err) {
-        console.error('Error adding student:', err.message);
-        return res.status(500).json({ success: false, error: 'Failed to add student' });
-      }
-      res.status(201).json({ success: true, message: 'Student added successfully' });
-    });
+  const query = 'INSERT INTO Student (USN, StudentName, Email, Phone, DeptID) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [USN, StudentName, Email, Phone, DeptID], (err) => {
+    if (err) {
+      console.error('Error adding student:', err.message);
+      return res.status(500).json({ success: false, error: 'Failed to add student' });
+    }
+    res.status(201).json({ success: true, message: 'Student added successfully' });
   });
 });
 
@@ -142,15 +140,15 @@ app.delete('/api/faculty/:FacultyID', (req, res) => {
 
 // Add a new student record
 app.post('/api/record', (req, res) => {
-  const { Marks, Attendance, Projects, Internship, USN } = req.body;
+  const { Projects, Internship, USN } = req.body;
 
-  // Ensure that Marks, Attendance, and USN are provided
-  if (!Marks || !Attendance || !USN) {
-    return res.status(400).json({ success: false, error: 'Marks, Attendance, and USN are required' });
+  // Ensure that USN is provided
+  if (!USN) {
+    return res.status(400).json({ success: false, error: 'USN is required' });
   }
 
-  const query = 'INSERT INTO record (Marks, Attendance, Projects, Internship, USN) VALUES (?, ?, ?, ?, ?)';
-  db.query(query, [Marks, Attendance, Projects, Internship, USN], (err, result) => {
+  const query = 'INSERT INTO record (Projects, Internship, USN) VALUES (?, ?, ?)';
+  db.query(query, [Projects, Internship, USN], (err, result) => {
     if (err) {
       console.error('Error adding student record:', err.message);
       return res.status(500).json({ success: false, error: 'Failed to add student record' });
@@ -158,7 +156,6 @@ app.post('/api/record', (req, res) => {
     res.status(201).json({ success: true, message: 'Student record added successfully', RecordID: result.insertId });
   });
 });
-
 
 // Get all student records
 app.get('/api/record', (req, res) => {
@@ -171,6 +168,7 @@ app.get('/api/record', (req, res) => {
     res.status(200).json({ success: true, data: results });  // Send all records
   });
 });
+
 // Delete a student record by RecordID
 app.delete('/api/record/:RecordID', (req, res) => {
   const { RecordID } = req.params;
@@ -345,6 +343,7 @@ app.get('/api/placement', (req, res) => {
     res.status(200).json({ success: true, data: results });
   });
 });
+
 // Add a new placement
 app.post('/api/placement', (req, res) => {
   const { ParticipationStatus, PkgOffered, USN } = req.body;
@@ -358,7 +357,7 @@ app.post('/api/placement', (req, res) => {
   }
 
   // Handle the ParticipationStatus and PkgOffered fields, allowing them to be nullable
-  const participationStatus = ParticipationStatus !== undefined ? ParticipationStatus : null;
+  const participationStatus = ParticipationStatus ? ParticipationStatus : null;
   const pkgOffered = PkgOffered !== undefined ? PkgOffered : null;
 
   // Insert the new placement record into the database
@@ -396,7 +395,6 @@ app.delete('/api/placement/:placementID', (req, res) => {
     res.status(200).json({ success: true, message: 'Placement deleted successfully' });
   });
 });
-
 
 // Login Endpoint
 app.post('/api/login', (req, res) => {
@@ -450,72 +448,111 @@ app.post('/api/register', (req, res) => {
     res.status(201).json({ success: true, message: 'Account created successfully.' });
   });
 });
-
 // ********** ATTENDANCE API **********
 
 // Get all attendance records
 app.get('/api/attendance', (req, res) => {
-  const query = 'SELECT * FROM attendance';
+  const query = `
+    SELECT a.*, c.CourseName 
+    FROM attendance a
+    JOIN Course c ON a.CourseID = c.CourseID
+  `;
   db.query(query, (err, results) => {
     if (err) {
       console.error('Error fetching attendance records:', err.message);
       return res.status(500).json({ success: false, error: 'Failed to fetch attendance records' });
     }
-    res.status(201).json({ success: true, data: results });
+    res.status(200).json({ success: true, data: results });
   });
 });
 
 // Add a new attendance record
 app.post('/api/attendance', (req, res) => {
-  const { CourseID, USN, DeptID, Attendance, Marks, Result } = req.body;
+  const { CourseName, USN, DeptID, Attendance, Marks, Result } = req.body;
 
-  if (!CourseID || !USN || !DeptID || Attendance === undefined || !Marks || !Result) {
+  if (!CourseName || !USN || !DeptID || Attendance === undefined || !Marks || !Result) {
     return res.status(400).json({ success: false, error: 'All fields are required' });
   }
 
-  const query = 'INSERT INTO attendance (CourseID, USN, DeptID, Attendance, Marks, Result) VALUES (?, ?, ?, ?, ?, ?)';
-  db.query(query, [CourseID, USN, DeptID, Attendance, Marks, Result], (err, result) => {
+  const getCourseIDQuery = 'SELECT CourseID FROM Course WHERE CourseName = ?';
+  db.query(getCourseIDQuery, [CourseName], (err, results) => {
     if (err) {
-      console.error('Error adding attendance record:', err.message);
-      return res.status(500).json({ success: false, error: 'Failed to add attendance record' });
+      console.error('Error fetching CourseID:', err.message);
+      return res.status(500).json({ success: false, error: 'Failed to fetch CourseID' });
     }
-    res.status(201).json({ success: true, message: 'Attendance record added successfully' });
+    if (results.length === 0) {
+      return res.status(400).json({ success: false, error: 'Invalid CourseName' });
+    }
+    const CourseID = results[0].CourseID;
+
+    const query = 'INSERT INTO attendance (CourseID, USN, DeptID, Attendance, Marks, Result) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(query, [CourseID, USN, DeptID, Attendance, Marks, Result], (err) => {
+      if (err) {
+        console.error('Error adding attendance record:', err.message);
+        return res.status(500).json({ success: false, error: 'Failed to add attendance record' });
+      }
+      res.status(201).json({ success: true, message: 'Attendance record added successfully' });
+    });
   });
 });
 
-// Update an attendance record by CourseID and USN
-app.put('/api/attendance/:CourseID/:USN', (req, res) => {
-  const { CourseID, USN } = req.params;
+// Update an attendance record by CourseName and USN
+app.put('/api/attendance/:CourseName/:USN', (req, res) => {
+  const { CourseName, USN } = req.params;
   const { DeptID, Attendance, Marks, Result } = req.body;
 
   if (!DeptID || Attendance === undefined || !Marks || !Result) {
     return res.status(400).json({ success: false, error: 'All fields are required' });
   }
 
-  const query = 'UPDATE attendance SET DeptID = ?, Attendance = ?, Marks = ?, Result = ? WHERE CourseID = ? AND USN = ?';
-  db.query(query, [DeptID, Attendance, Marks, Result, CourseID, USN], (err, result) => {
+  const getCourseIDQuery = 'SELECT CourseID FROM Course WHERE CourseName = ?';
+  db.query(getCourseIDQuery, [CourseName], (err, results) => {
     if (err) {
-      console.error('Error updating attendance record:', err.message);
-      return res.status(500).json({ success: false, error: 'Failed to update attendance record' });
+      console.error('Error fetching CourseID:', err.message);
+      return res.status(500).json({ success: false, error: 'Failed to fetch CourseID' });
     }
-    res.status(200).json({ success: true, message: 'Attendance record updated successfully' });
+    if (results.length === 0) {
+      return res.status(400).json({ success: false, error: 'Invalid CourseName' });
+    }
+    const CourseID = results[0].CourseID;
+
+    const query = 'UPDATE attendance SET DeptID = ?, Attendance = ?, Marks = ?, Result = ? WHERE CourseID = ? AND USN = ?';
+    db.query(query, [DeptID, Attendance, Marks, Result, CourseID, USN], (err) => {
+      if (err) {
+        console.error('Error updating attendance record:', err.message);
+        return res.status(500).json({ success: false, error: 'Failed to update attendance record' });
+      }
+      res.status(200).json({ success: true, message: 'Attendance record updated successfully' });
+    });
   });
 });
 
-// Delete an attendance record by CourseID and USN
-app.delete('/api/attendance/:CourseID/:USN', (req, res) => {
-  const { CourseID, USN } = req.params;
+// Delete an attendance record by CourseName and USN
+app.delete('/api/attendance/:CourseName/:USN', (req, res) => {
+  const { CourseName, USN } = req.params;
 
-  const query = 'DELETE FROM attendance WHERE CourseID = ? AND USN = ?';
-  db.query(query, [CourseID, USN], (err, result) => {
+  const getCourseIDQuery = 'SELECT CourseID FROM Course WHERE CourseName = ?';
+  db.query(getCourseIDQuery, [CourseName], (err, results) => {
     if (err) {
-      console.error('Error deleting attendance record:', err.message);
-      return res.status(500).json({ success: false, error: 'Failed to delete attendance record' });
+      console.error('Error fetching CourseID:', err.message);
+      return res.status(500).json({ success: false, error: 'Failed to fetch CourseID' });
     }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, error: 'Attendance record not found' });
+    if (results.length === 0) {
+      return res.status(400).json({ success: false, error: 'Invalid CourseName' });
     }
-    res.status(200).json({ success: true, message: 'Attendance record deleted successfully' });
+    const CourseID = results[0].CourseID;
+
+    const query = 'DELETE FROM attendance WHERE CourseID = ? AND USN = ?';
+    db.query(query, [CourseID, USN], (err, result) => {
+      if (err) {
+        console.error('Error deleting attendance record:', err.message);
+        return res.status(500).json({ success: false, error: 'Failed to delete attendance record' });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ success: false, error: 'Attendance record not found' });
+      }
+      res.status(200).json({ success: true, message: 'Attendance record deleted successfully' });
+    });
   });
 });
 

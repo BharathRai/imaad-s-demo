@@ -18,6 +18,7 @@ import DepartmentManagement from './pages/DepartmentManagement';
 import PlacementManagement from './pages/PlacementManagement';
 import LoginPage from './login/LoginPage'; // Import Login Page
 import Attendance from './pages/Attendance';
+
 // Create a custom theme for the application
 const theme = createTheme({
   palette: {
@@ -63,7 +64,7 @@ function App() {
                 <Route path="/courses" element={<CourseManagement />} />
                 <Route path="/departments" element={<DepartmentManagement />} />
                 <Route path="/placements" element={<PlacementManagement />} />
-                <Route path="/attendance" element={<Attendance/>} />
+                <Route path="/attendance" element={<Attendance />} />
                 {/* Fallback Route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </>

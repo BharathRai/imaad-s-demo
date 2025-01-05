@@ -24,6 +24,12 @@ export default function AddFaculty() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate phone number
+    if (!/^\d{10}$/.test(facultyData.Phone)) {
+      setSnackbar({ open: true, message: 'Phone number must be exactly 10 digits.', severity: 'error' });
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:5000/api/faculty', {
         method: 'POST',

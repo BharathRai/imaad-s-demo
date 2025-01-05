@@ -41,7 +41,15 @@ export default function DepartmentManagement() {
   };
 
   const handleAddDepartment = () => {
-    const newDept = { DeptID: formData.DeptID, DeptName: formData.DeptName, Staff: formData.Staff };
+    const { DeptID, DeptName, Staff } = formData;
+
+    // Validate DeptID to be a positive integer
+    if (!/^[1-9]\d*$/.test(DeptID)) {
+      setErrorMessage('Department ID must be a positive integer.');
+      return;
+    }
+
+    const newDept = { DeptID, DeptName, Staff };
 
     // POST request to add a new department
     fetch('http://localhost:5000/api/departments', {
@@ -55,7 +63,7 @@ export default function DepartmentManagement() {
           // Update departments with the new department from API response
           setDepartments([
             ...departments,
-            { DeptID: formData.DeptID, DeptName: formData.DeptName, Staff: formData.Staff },
+            { DeptID, DeptName, Staff },
           ]);
           setSuccessMessage('Department added successfully!');
           setFormData({ DeptID: '', DeptName: '', Staff: '' });

@@ -5,14 +5,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Attendance() {
     const [attendanceData, setAttendanceData] = useState([]);
-    const [formData, setFormData] = useState({ CourseID: '', StudentID: '', Attendance: '', Marks: '' });
+    const [formData, setFormData] = useState({ CourseName: '', USN: '', DeptID: '', Attendance: '', Marks: '', Result: '' });
     const [isEditing, setIsEditing] = useState(false);
-    const [editingRecordID, setEditingRecordID] = useState(null);
+    const [editingRecord, setEditingRecord] = useState({ CourseName: null, USN: null });
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
-    // Fetch courses from the server
-    // Fetch attendance data from the server
     useEffect(() => {
         fetch('http://localhost:5000/api/attendance')
             .then((response) => response.json())
@@ -21,21 +19,20 @@ export default function Attendance() {
                     setAttendanceData(data.data);
                 }
             })
-            .catch((error) => {
+            .catch(() => {
                 setErrorMessage('Failed to fetch attendance data.');
             });
     }, []);
-    // Handle form input changes
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // Handle form submission to add or update attendance record
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.CourseID || !formData.StudentID || !formData.Attendance || !formData.Marks) {
+        if (!formData.CourseName || !formData.USN || !formData.DeptID || formData.Attendance === '' || !formData.Marks || !formData.Result) {
             setErrorMessage('All fields are required.');
             return;
         }
@@ -43,7 +40,7 @@ export default function Attendance() {
         try {
             const response = await fetch(
                 isEditing
-                    ? `http://localhost:5000/api/attendance/${editingRecordID}`
+                    ? `http://localhost:5000/api/attendance/${editingRecord.CourseName}/${editingRecord.USN}`
                     : 'http://localhost:5000/api/attendance',
                 {
                     method: isEditing ? 'PUT' : 'POST',
@@ -56,11 +53,10 @@ export default function Attendance() {
             if (response.ok) {
                 setSuccessMessage(data.message);
                 setErrorMessage('');
-                setFormData({ CourseID: '', StudentID: '', Attendance: '', Marks: '' });
+                setFormData({ CourseName: '', USN: '', DeptID: '', Attendance: '', Marks: '', Result: '' });
                 setIsEditing(false);
-                setEditingRecordID(null);
+                setEditingRecord({ CourseName: null, USN: null });
 
-                // Refresh attendance data
                 fetch('http://localhost:5000/api/attendance')
                     .then((res) => res.json())
                     .then((data) => {
@@ -76,22 +72,15 @@ export default function Attendance() {
         }
     };
 
-    // Handle edit button click
     const handleEdit = (record) => {
+        setFormData(record);
         setIsEditing(true);
-        setEditingRecordID(record.RecordID);
-        setFormData({
-            CourseID: record.CourseID,
-            StudentID: record.StudentID,
-            Attendance: record.Attendance,
-            Marks: record.Marks,
-        });
+        setEditingRecord({ CourseName: record.CourseName, USN: record.USN });
     };
 
-    // Handle delete button click
-    const handleDelete = async (recordID) => {
+    const handleDelete = async (record) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/attendance/${recordID}`, {
+            const response = await fetch(`http://localhost:5000/api/attendance/${record.CourseName}/${record.USN}`, {
                 method: 'DELETE',
             });
 
@@ -100,7 +89,6 @@ export default function Attendance() {
                 setSuccessMessage(data.message);
                 setErrorMessage('');
 
-                // Refresh attendance data
                 fetch('http://localhost:5000/api/attendance')
                     .then((res) => res.json())
                     .then((data) => {
@@ -122,24 +110,29 @@ export default function Attendance() {
                 Attendance and Marks Management
             </Typography>
 
-            {/* Error and Success Messages */}
             {errorMessage && <Typography color="error" gutterBottom>{errorMessage}</Typography>}
             {successMessage && <Typography color="success.main" gutterBottom>{successMessage}</Typography>}
 
-            {/* Attendance Form */}
             <form onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
                     <TextField
-                        label="Course ID"
-                        name="CourseID"
-                        value={formData.CourseID}
+                        label="Course Name"
+                        name="CourseName"
+                        value={formData.CourseName}
                         onChange={handleInputChange}
                         required
                     />
                     <TextField
-                        label="Student ID"
-                        name="StudentID"
-                        value={formData.StudentID}
+                        label="USN"
+                        name="USN"
+                        value={formData.USN}
+                        onChange={handleInputChange}
+                        required
+                    />
+                    <TextField
+                        label="Dept ID"
+                        name="DeptID"
+                        value={formData.DeptID}
                         onChange={handleInputChange}
                         required
                     />
@@ -157,47 +150,55 @@ export default function Attendance() {
                         onChange={handleInputChange}
                         required
                     />
+                    <TextField
+                        label="Result"
+                        name="Result"
+                        value={formData.Result}
+                        onChange={handleInputChange}
+                        required
+                    />
                     <Button type="submit" variant="contained" color="primary">
                         {isEditing ? 'Update Record' : 'Add Record'}
                     </Button>
                 </Box>
             </form>
 
-            {/* Attendance Table */}
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Record ID</TableCell>
-                            <TableCell>Course ID</TableCell>
-                            <TableCell>Student ID</TableCell>
+                            <TableCell>Course Name</TableCell>
+                            <TableCell>USN</TableCell>
+                            <TableCell>Dept ID</TableCell>
                             <TableCell>Attendance</TableCell>
                             <TableCell>Marks</TableCell>
-                            <TableCell>Action</TableCell>
+                            <TableCell>Result</TableCell>
+                            <TableCell>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {attendanceData.length > 0 ? (
                             attendanceData.map((record) => (
-                                <TableRow key={record.RecordID}>
-                                    <TableCell>{record.RecordID}</TableCell>
-                                    <TableCell>{record.CourseID}</TableCell>
-                                    <TableCell>{record.StudentID}</TableCell>
+                                <TableRow key={`${record.CourseName}-${record.USN}`}>
+                                    <TableCell>{record.CourseName}</TableCell>
+                                    <TableCell>{record.USN}</TableCell>
+                                    <TableCell>{record.DeptID}</TableCell>
                                     <TableCell>{record.Attendance}</TableCell>
                                     <TableCell>{record.Marks}</TableCell>
+                                    <TableCell>{record.Result}</TableCell>
                                     <TableCell>
                                         <IconButton onClick={() => handleEdit(record)}>
-                                            <EditIcon color="primary" />
+                                            <EditIcon />
                                         </IconButton>
-                                        <IconButton onClick={() => handleDelete(record.RecordID)}>
-                                            <DeleteIcon color="error" />
+                                        <IconButton onClick={() => handleDelete(record)}>
+                                            <DeleteIcon />
                                         </IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} align="center">
+                                <TableCell colSpan={7} align="center">
                                     No records available
                                 </TableCell>
                             </TableRow>
